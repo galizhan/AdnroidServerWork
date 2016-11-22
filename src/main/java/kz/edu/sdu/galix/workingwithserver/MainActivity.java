@@ -1,10 +1,12 @@
 package kz.edu.sdu.galix.workingwithserver;
 
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -18,6 +20,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,7 +33,8 @@ public class MainActivity extends AppCompatActivity {
     private ListView lv;
     EditText ed1,ed2;
     TextView tv;
-
+    String secret="";
+    ProgressBar pb;
     ArrayList<HashMap<String, String>> contactList;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,24 +45,31 @@ public class MainActivity extends AppCompatActivity {
         ed2 = (EditText) findViewById(R.id.ed2);
         tv = (TextView) findViewById(R.id.txt);
         contactList = new ArrayList<>();
-
+        pb = (ProgressBar)findViewById(R.id.pb);
     }
     public void Log_in(View v){
         String name,pass;
         name = ed1.getText().toString();
         pass = ed2.getText().toString();
-        if(isUser(name,pass)){tv.setText(contactList.get(0).get("sec"));
+        if(isUser(name,pass)){
+            tv.setTextColor(Color.GREEN);
+            tv.setText(secret);
         ed1.setText("");
         ed2.setText("");}
-        else tv.setText("Wrong name or pass");
+        else {tv.setText("Wrong name or pass");
+            tv.setTextColor(Color.RED);
+        }
     }
     public boolean isUser(String name,String pass){
         int count=0;
         for (HashMap<String, String> map :contactList) {
-            if(name.equals(map.get("name")) && pass.equals(map.get("pass"))) count=1;
+            if(name.equals(map.get("name")) && pass.equals(map.get("pass"))) {count=1;
+            secret=map.get("sec");
+
+            }
 
         }
-        Log.d(TAG,"count"+count);
+        Log.d(TAG,"sec"+secret);
         if(count==1) return true;
         else return false;
     }
@@ -67,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             Toast.makeText(MainActivity.this,"Json Data is downloading",Toast.LENGTH_LONG).show();
-
+//            pb.setVisibility(View.VISIBLE);
         }
 
         @Override
@@ -100,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                         // adding each child node to HashMap key => value
                         contact.put("name", name);
                         contact.put("pass", pass);
-
+                        contact.put("sec",  sec);
 
                         // adding contact to contact list
                        contactList.add(contact);
@@ -133,7 +144,12 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
 
-
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            pb.setVisibility(View.GONE);
+            Toast.makeText(MainActivity.this,"Json Data downloading is finished",Toast.LENGTH_LONG).show();
+        }
     }
 
 }
